@@ -145,7 +145,7 @@
 }
 
 - (NSInteger) fillRelationshipOnObject:(id)object withKey:(NSString*)key itemsType:(Class)type fromData:(NSArray*)data byReplacingData:(BOOL)replace{
-    if (![data isKindOfClass:[NSArray class]]) {
+    if (![data isKindOfClass:[NSArray class]] || [data count] == 0) {
         return 0;
     }
     
