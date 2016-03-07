@@ -61,7 +61,7 @@ byReplacingData:(BOOL)replace
                                                additionalParameters:parameters
                                                             success:^(NSURLSessionDataTask *task, id response) {
                                                                 NSInteger newObjects = 0;
-                                                                if (keyName) {
+                                                                if (keyName && ![keyName isEqualToString:@"me"]) { //added me to modify self object.  config name maps to what to edit in the object.  not super great for objects with a ton of strings in them or primitive data types like "user"
                                                                     newObjects = [[RDSManager defaultManager].objectFactory fillRelationshipOnManagedObject:self withKey:keyName fromData:response byReplacingData:replace];
                                                                 } else {
                                                                     [[RDSManager defaultManager].objectFactory fillObject:self
