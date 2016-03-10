@@ -55,14 +55,21 @@ byReplacingData:(BOOL)replace
     RDSRequestConfiguration* configuration = [[RDSManager defaultManager].configurator configurationForObject:self
                                                                                                       keyPath:keyName
                                                                                                        scheme:RDSRequestSchemeFetch];
+    //so keyName maps to the config key in a hashtable somewhere to get a config object.  keyName after this point, points to the var that the factory will fill.  This is bad because if we want to fill the root object (I.E user) then it's an empty string "" and it doesn't work in a hashtable in objective c.  This also is bad when we want to update an object (I.E medias) using a different url or config.  If we want to update medias by getting all the medias that have changed from a timestamp, we'd have to make a new var and update the old var manually.  The block of code below seperates the config hash key and the var name by having the config hash key able to have the var name and a ? and anything after it like cache busting for javascript files in browsers.
+    NSString* keyNameInObj = keyName;
+    NSRange lastQuestionmarkRange = [keyNameInObj rangeOfString:@"?" options:NSBackwardsSearch];
+    if (lastQuestionmarkRange.location != NSNotFound) {
+        keyNameInObj = [keyNameInObj substringToIndex:lastQuestionmarkRange.location];
+    }
+    
     NSURLSessionDataTask* task =
     [[RDSManager defaultManager].networkConnector dataTaskForObject:self
                                                   withConfiguration:configuration
                                                additionalParameters:parameters
                                                             success:^(NSURLSessionDataTask *task, id response) {
                                                                 NSInteger newObjects = 0;
-                                                                if (keyName && ![keyName isEqualToString:@"me"]) { //added me to modify self object.  config name maps to what to edit in the object.  not super great for objects with a ton of strings in them or primitive data types like "user"
-                                                                    newObjects = [[RDSManager defaultManager].objectFactory fillRelationshipOnManagedObject:self withKey:keyName fromData:response byReplacingData:replace];
+                                                                if (keyNameInObj && [keyNameInObj length] > 0) {
+                                                                    newObjects = [[RDSManager defaultManager].objectFactory fillRelationshipOnManagedObject:self withKey:keyNameInObj fromData:response byReplacingData:replace];
                                                                 } else {
                                                                     [[RDSManager defaultManager].objectFactory fillObject:self
                                                                                                                  fromData:response];
