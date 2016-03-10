@@ -42,6 +42,11 @@
                                                        success:^(NSURLSessionDataTask *task, id response) {
                                                            if (success) {
                                                                if (configuration.baseKeyPath.length) {
+                                                                   if ([response valueForKey:@"now_ts"]) { //set server time delta so we can sync up with the same time of the server for when we get changed images and such
+                                                                       double timeDiff = [[response valueForKey:@"now_ts"] doubleValue] - [[NSDate date] timeIntervalSince1970] - 1.0; //time to live is 60 seconds, but give a 1 second buffer
+                                                                       [[NSUserDefaults standardUserDefaults] setValue:[NSNumber numberWithDouble:timeDiff] forKey:@"ServerTimeDelta"];
+                                                                       [[NSUserDefaults standardUserDefaults] synchronize];
+                                                                   }
                                                                    response = [response valueForKeyPath:configuration.baseKeyPath];
                                                                    if (!response) {
                                                                        NSLog(@"RDSAFNetworkingConnector Warning: No data found for baseKeyPath(%@) for response to the url %@",configuration.baseKeyPath, urlString);
